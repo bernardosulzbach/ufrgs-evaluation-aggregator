@@ -6,6 +6,7 @@ import os
 import sys
 import logging
 import json
+import matplotlib.pyplot as plt
 
 configuration_filename = 'configuration.json'
 
@@ -82,6 +83,10 @@ def extract_text(pdf_filename):
         return contents
 
 
+def normalize_name(name):
+    return name.lower().replace(' ', '-')
+
+
 def make_logger(filename):
     logger = logging.getLogger('logger')
     logger.setLevel(logging.DEBUG)
@@ -129,5 +134,6 @@ if __name__ == '__main__':
                 aggregates.get(name).update_data(indicator, period, value)
                 i += 1
 
-    for aggregate in aggregates.values():
-        print(str(aggregate))
+    with open('aggregate.txt', 'w') as aggregate_handle:
+        for aggregate in aggregates.values():
+            print(str(aggregate), file=aggregate_handle)
