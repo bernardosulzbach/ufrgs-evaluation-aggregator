@@ -4,9 +4,9 @@ import urllib.request
 import os
 import sys
 import logging
+import json
 
-sources_url = 'http://www.ufrgs.br/sai/dados-resultados/painel-qualidade/dados-2016-1/serie-historica-discente/curso/'
-sources_root = './sources'
+configuration_filename = 'configuration.json'
 
 
 def ensure_path_exists(path):
@@ -19,18 +19,18 @@ def ensure_path_exists(path):
             raise
 
 
-def ensure_sources_root_exists():
-    ensure_path_exists(sources_root)
-
-
 def initialize_sources(logger):
-    ensure_sources_root_exists()
-    # Download all XX.pdf until we get a 404.
+    with open(configuration_filename) as configuration_handler:
+        configuration = json.load(configuration_handler)
+    base_path = configuration['sources_base_path']
+    root = configuration['sources_root']
+    ensure_path_exists(root)
     logger.info('Started downloading data files...')
+    # Download all XX.pdf until we get a 404.
     for i in range(1, 100):
         filename = '{:02}.pdf'.format(i)
-        full_url = sources_url + filename
-        source_path = os.path.join(sources_root, filename)
+        full_url = base_path + filename
+        source_path = os.path.join(root, filename)
         urllib.request.urlretrieve(full_url, source_path)
         try:
             urllib.request.urlretrieve(full_url, source_path)
