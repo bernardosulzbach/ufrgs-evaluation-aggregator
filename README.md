@@ -1,31 +1,31 @@
 # UFRGS Evaluation Aggregator
 This project aims to aggregate all the scattered numbers the Federal University of Rio Grande do Sul provides about the student evaluation of their courses into human-friendly graphs.
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/respeito-a-diversidade.svg)
+![](./reports/didatica.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/contribuicao-para-formacao.svg)
+![](./reports/assiduidade-e-pontualidade.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/didatica.svg)
+![](./reports/disponibilidade.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/cordialidade.svg)
+![](./reports/carga-horaria.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/carga-horaria.svg)
+![](./reports/conhecimentos-previos.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/disponibilidade.svg)
+![](./reports/uso-de-recursos-e-didatica.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/retorno-das-avaliacoes.svg)
+![](./reports/respeito-a-diversidade.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/compatibilidade-da-avaliacao.svg)
+![](./reports/retorno-das-avaliacoes.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/uso-de-recursos-e-didatica.svg)
+![](./reports/cordialidade.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/contextualizacao.svg)
+![](./reports/compatibilidade-da-avaliacao.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/conhecimentos-previos.svg)
+![](./reports/cumprimento-do-plano-de-ensino.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/cumprimento-do-plano-de-ensino.svg)
+![](./reports/contextualizacao.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/conhecimento.svg)
+![](./reports/contribuicao-para-formacao.png)
 
-![](https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/assiduidade-e-pontualidade.svg)
+![](./reports/conhecimento.png)
 

@@ -247,7 +247,7 @@ if __name__ == '__main__':
         plt.plot(computer_science_values, label='Ciência da Computação')
         plt.xticks(range(len(labels)), labels)
         plot_path = configuration['reports_root']
-        plot_filename = normalize_name(indicator) + '.svg'
+        plot_filename = normalize_name(indicator) + '.png'
         full_plot_path = os.path.join(plot_path, plot_filename)
         ensure_path_exists(plot_path)
         plt.margins(0.5)
@@ -257,7 +257,7 @@ if __name__ == '__main__':
         plt.legend(bbox_to_anchor=(0.5, -0.05), loc='upper center')
         plt.savefig(full_plot_path)
         plt.close()
-        plot_url = configuration['reports_url'] + plot_filename
+        plot_url = configuration['reports_root'] + '/' + plot_filename
         markdown_code.append('![]({})'.format(plot_url))
         markdown_code.append('\n')
         markdown_code.append('\n')
