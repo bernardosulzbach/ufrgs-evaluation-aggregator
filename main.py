@@ -226,13 +226,13 @@ if __name__ == '__main__':
         if aggregate.name.startswith('Ciência da Computação'):
             computer_science = aggregate
             break
-    # TODO: compute minimum and maximum.
     markdown_code = []
     markdown_code.append('# UFRGS Evaluation Aggregator')
     markdown_code.append('\n')
     markdown_code.append(configuration['project_description'])
-    markdown_code.append('\n')
-    markdown_code.append('\n')
+    markdown_code.append('\n\n')
+    markdown_code.append(configuration['graphs_description'])
+    markdown_code.append('\n\n')
     for indicator in sorted(average.data):
         plt.title('Comparação' + ': ' + indicator)
         padding = 0.4
