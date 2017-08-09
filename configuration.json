@@ -1,5 +1,7 @@
 {
   "sources_base_path": "http://www.ufrgs.br/sai/dados-resultados/painel-qualidade/dados-2016-1/serie-historica-discente/curso/",
+  "plot_everything": false,
   "sources_root": "./sources",
-  "reports_root": "./reports"
+  "reports_root": "./reports",
+  "plots_root": "./plots"
 }

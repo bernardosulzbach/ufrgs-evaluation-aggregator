@@ -35,7 +35,7 @@ class Aggregate():
         if indicator not in self.data:
             self.data.update({indicator: {}})
         if period in self.data[indicator]:
-            raise ValueError
+            raise ValueError('{} already in {}!'.format(period, indicator))
         self.data[indicator].update({period: value})
 
     def __str__(self):
@@ -121,7 +121,8 @@ def extract_text(pdf_filename):
         contents = []
         for page in range(reader.getNumPages()):
             contents.extend(reader.getPage(page).extractText().split('\n'))
-        return contents
+        # Return non-empty only.
+        return [string for string in contents if string]
 
 
 def normalize_name(name):
@@ -172,7 +173,14 @@ if __name__ == '__main__':
             i += 1
         # From this point onwards we will match the course name and the evaluations.
         # There may be empty strings at the end, so we check against those.
-        while i < len(strings) and strings[i]:
+        while i < len(strings):
+            # New page, skip headers.
+            if strings[i] == 'Universidade Federal do Rio Grande do Sul':
+                i += 4 + len(periods)
+                continue
+            if strings[i][0].isdigit():
+                # Some of the data ends up being malformed (great job, UFRGS). So we skip these lines.
+                i += len(periods)
             name = strings[i]
             i += 1
             if name not in aggregates:
@@ -192,11 +200,10 @@ if __name__ == '__main__':
             aggregate_handle.write(str(aggregate))
     task.finish()
 
-    plot_everything = False
-    if plot_everything:
+    if configuration['plot_everything']:
         task = LoggedTask(logger, 'plotting graphs')
         for aggregate in aggregates.values():
-            aggregate.plot('plots')
+            aggregate.plot(configuration['plots_root'])
         task.finish()
 
     # Plot the combination of the average and the computer science data.
@@ -233,8 +240,8 @@ if __name__ == '__main__':
         plt.plot(average_values, label='Média')
         plt.plot(computer_science_values, label='Ciência da Computação')
         plt.xticks(range(len(labels)), labels)
-        plot_path = 'report'
-        full_plot_path = os.path.join('report', normalize_name(indicator) + '.svg')
+        plot_path = configuration['reports_root']
+        full_plot_path = os.path.join(plot_path, normalize_name(indicator) + '.svg')
         ensure_path_exists(plot_path)
         plt.margins(0.5)
         axis = plt.subplot(111)
