@@ -14,6 +14,18 @@ import multiprocessing
 configuration_filename = 'configuration.json'
 
 
+class LoggedTask():
+    def __init__(self, logger, name):
+        self.logger = logger
+        self.start = time.time()
+        self.name = name
+        logger.info('Started {}.'.format(name))
+
+    def finish(self):
+        delta = time.time() - self.start
+        logger.info('Finished {} after {:.3f} s.'.format(self.name, delta))
+
+
 class Aggregate():
     def __init__(self, name: str):
         self.name = name
@@ -44,12 +56,12 @@ class Aggregate():
 
     def plot(self, path):
         for indicator in self.data:
+            figure = plt.figure()
             plt.title(self.name + ': ' + indicator)
-            plt.plot(list(self.data[indicator].values()))
             plot_path = os.path.join(path, normalize_name(self.name))
             full_plot_path = os.path.join(plot_path, normalize_name(indicator) + '.svg')
             ensure_path_exists(plot_path)
-            plt.savefig(full_plot_path)
+            figure.savefig(full_plot_path)
             plt.close()
 
 
@@ -106,7 +118,9 @@ def initialize_sources(logger):
 def extract_text(pdf_filename):
     with open(pdf_filename, 'rb') as file_handle:
         reader = PyPDF2.PdfFileReader(file_handle)
-        contents = reader.getPage(0).extractText().split('\n')
+        contents = []
+        for page in range(reader.getNumPages()):
+            contents.extend(reader.getPage(page).extractText().split('\n'))
         return contents
 
 
@@ -142,6 +156,8 @@ if __name__ == '__main__':
     with open(configuration_filename) as configuration_handler:
         configuration = json.load(configuration_handler)
     sources_root = configuration['sources_root']
+
+    task = LoggedTask(logger, 'extracting text')
     # A map from course name to aggregate object.
     aggregates = {}
     for pdf_file in os.listdir(sources_root):
@@ -168,17 +184,23 @@ if __name__ == '__main__':
                     value = None
                 aggregates.get(name).update_data(indicator, period, value)
                 i += 1
+    task.finish()
 
+    task = LoggedTask(logger, 'dumping aggregates')
     with open('aggregate.txt', 'w') as aggregate_handle:
         for aggregate in aggregates.values():
-            print(str(aggregate), file=aggregate_handle)
+            aggregate_handle.write(str(aggregate))
+    task.finish()
 
-    if False:
+    plot_everything = False
+    if plot_everything:
+        task = LoggedTask(logger, 'plotting graphs')
         for aggregate in aggregates.values():
             aggregate.plot('plots')
+        task.finish()
 
     # Plot the combination of the average and the computer science data.
-    logger.info('Computing averages.')
+    task = LoggedTask(logger, 'making report')
     totals = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
     counts = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
     for aggregate in aggregates.values():
@@ -187,7 +209,7 @@ if __name__ == '__main__':
                 if aggregate.data[indicator][period]:
                     totals[indicator][period] += aggregate.data[indicator][period]
                     counts[indicator][period] += 1
-    average = Aggregate('Average')
+    average = Aggregate('Média')
     for indicator in totals:
         for period in totals[indicator]:
             average.update_data(indicator, period, totals[indicator][period] / counts[indicator][period])
@@ -196,13 +218,29 @@ if __name__ == '__main__':
         if aggregate.name.startswith('Ciência da Computação'):
             computer_science = aggregate
             break
+    # TODO: compute minimum and maximum.
     for indicator in average.data:
-        plt.title('Comparison' + ': ' + indicator)
-        plt.plot(list(average.data[indicator].values()), label='Average')
-        plt.plot(list(computer_science.data[indicator].values()), label='CS')
-        plot_path = os.path.join('plots', normalize_name('comparison'))
-        full_plot_path = os.path.join(plot_path, normalize_name(indicator) + '.svg')
+        plt.title('Comparação' + ': ' + indicator)
+        padding = 0.4
+        plt.axis([-padding, len(average.data[indicator].values()) - 1 + padding, 3, 5])
+        labels = []
+        average_values = []
+        computer_science_values = []
+        for period in sorted(average.data[indicator]):
+            labels.append(period)
+            average_values.append(average.data[indicator][period])
+            computer_science_values.append(computer_science.data[indicator][period])
+        plt.plot(average_values, label='Média')
+        plt.plot(computer_science_values, label='Ciência da Computação')
+        plt.xticks(range(len(labels)), labels)
+        plot_path = 'report'
+        full_plot_path = os.path.join('report', normalize_name(indicator) + '.svg')
         ensure_path_exists(plot_path)
-        plt.legend()
+        plt.margins(0.5)
+        axis = plt.subplot(111)
+        box = axis.get_position()
+        axis.set_position([box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
+        plt.legend(bbox_to_anchor=(0.5, -0.05), loc='upper center')
         plt.savefig(full_plot_path)
         plt.close()
+    task.finish()
