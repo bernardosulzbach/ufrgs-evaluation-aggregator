@@ -4,5 +4,6 @@
   "plot_everything": false,
   "sources_root": "./sources",
   "reports_root": "./reports",
+  "reports_url": "https://raw.githubusercontent.com/mafagafogigante/ufrgs-evaluation-aggregator/master/reports/",
   "plots_root": "./plots"
 }

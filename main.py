@@ -228,7 +228,10 @@ if __name__ == '__main__':
     # TODO: compute minimum and maximum.
     markdown_code = []
     markdown_code.append('# UFRGS Evaluation Aggregator')
+    markdown_code.append('\n')
     markdown_code.append(configuration['project_description'])
+    markdown_code.append('\n')
+    markdown_code.append('\n')
     for indicator in average.data:
         plt.title('Comparação' + ': ' + indicator)
         padding = 0.4
@@ -244,7 +247,8 @@ if __name__ == '__main__':
         plt.plot(computer_science_values, label='Ciência da Computação')
         plt.xticks(range(len(labels)), labels)
         plot_path = configuration['reports_root']
-        full_plot_path = os.path.join(plot_path, normalize_name(indicator) + '.svg')
+        plot_filename = normalize_name(indicator) + '.svg'
+        full_plot_path = os.path.join(plot_path, plot_filename)
         ensure_path_exists(plot_path)
         plt.margins(0.5)
         axis = plt.subplot(111)
@@ -253,6 +257,10 @@ if __name__ == '__main__':
         plt.legend(bbox_to_anchor=(0.5, -0.05), loc='upper center')
         plt.savefig(full_plot_path)
         plt.close()
+        plot_url = configuration['reports_url'] + plot_filename
+        markdown_code.append('![]({})'.format(plot_url))
+        markdown_code.append('\n')
+        markdown_code.append('\n')
     task.finish()
     with open('README.md', 'w') as readme:
         readme.writelines(markdown_code)
