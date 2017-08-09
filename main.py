@@ -1,3 +1,4 @@
+import statistics
 import re
 import time
 import PyPDF2
@@ -33,7 +34,7 @@ class Aggregate():
 
     def update_data(self, indicator: str, period: str, value: float):
         if indicator not in self.data:
-            self.data.update({indicator: {}})
+            self.data.update({indicator: collections.OrderedDict()})
         if period in self.data[indicator]:
             raise ValueError('{} already in {}!'.format(period, indicator))
         self.data[indicator].update({period: value})
@@ -232,10 +233,27 @@ if __name__ == '__main__':
     markdown_code.append(configuration['project_description'])
     markdown_code.append('\n')
     markdown_code.append('\n')
-    for indicator in average.data:
+    for indicator in sorted(average.data):
         plt.title('Comparação' + ': ' + indicator)
         padding = 0.4
-        plt.axis([-padding, len(average.data[indicator].values()) - 1 + padding, 3, 5])
+        plt.axis([-padding, len(average.data[indicator].values()) - 1 + padding, 3 - padding / 2, 5 + padding / 2])
+        # Find the best and worst at this indicator.
+        min_name = ''
+        min_values = [5.0]
+        max_name = ''
+        max_values = [0.0]
+        for aggregate in aggregates.values():
+            if not aggregate.data[indicator]:
+                continue
+            values = [value for value in aggregate.data[indicator].values() if value is not None]
+            if not values:
+                continue
+            if statistics.median(values) < statistics.median(min_values):
+                min_values = values
+                min_name = aggregate.name
+            if statistics.median(values) > statistics.median(max_values):
+                max_values = values
+                max_name = aggregate.name
         labels = []
         average_values = []
         computer_science_values = []
@@ -245,6 +263,11 @@ if __name__ == '__main__':
             computer_science_values.append(computer_science.data[indicator][period])
         plt.plot(average_values, label='Média')
         plt.plot(computer_science_values, label='Ciência da Computação')
+        # Because minimum and maximum may have missing initial values, we have to supply X too.
+        min_x = range(len(computer_science_values) - len(min_values), len(computer_science_values))
+        max_x = range(len(computer_science_values) - len(max_values), len(computer_science_values))
+        plt.plot(min_x, min_values, label=min_name[:min_name.find('(')].strip())
+        plt.plot(max_x, max_values, label=max_name[:max_name.find('(')].strip())
         plt.xticks(range(len(labels)), labels)
         plot_path = configuration['reports_root']
         plot_filename = normalize_name(indicator) + '.png'
@@ -253,7 +276,7 @@ if __name__ == '__main__':
         plt.margins(0.5)
         axis = plt.subplot(111)
         box = axis.get_position()
-        axis.set_position([box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
+        axis.set_position([box.x0, box.y0 + box.height * 0.25, box.width, box.height * 0.75])
         plt.legend(bbox_to_anchor=(0.5, -0.05), loc='upper center')
         plt.savefig(full_plot_path)
         plt.close()
