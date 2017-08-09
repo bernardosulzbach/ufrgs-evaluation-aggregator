@@ -226,6 +226,9 @@ if __name__ == '__main__':
             computer_science = aggregate
             break
     # TODO: compute minimum and maximum.
+    markdown_code = []
+    markdown_code.append('# UFRGS Evaluation Aggregator')
+    markdown_code.append(configuration['project_description'])
     for indicator in average.data:
         plt.title('Comparação' + ': ' + indicator)
         padding = 0.4
@@ -251,3 +254,5 @@ if __name__ == '__main__':
         plt.savefig(full_plot_path)
         plt.close()
     task.finish()
+    with open('README.md', 'w') as readme:
+        readme.writelines(markdown_code)

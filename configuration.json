@@ -1,4 +1,5 @@
 {
+  "project_description": "This project aims to aggregate all the scattered numbers the Federal University of Rio Grande do Sul provides about the student evaluation of their courses into human-friendly graphs.",
   "sources_base_path": "http://www.ufrgs.br/sai/dados-resultados/painel-qualidade/dados-2016-1/serie-historica-discente/curso/",
   "plot_everything": false,
   "sources_root": "./sources",
