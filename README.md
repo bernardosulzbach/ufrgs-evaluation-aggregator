@@ -1,7 +1,7 @@
 # UFRGS Evaluation Aggregator
 This project aims to aggregate all the scattered numbers the Federal University of Rio Grande do Sul provides about the student evaluation of their courses into human-friendly graphs.
 
-The following graphs contain the values for average, computer science and the best and worst course in the specific indicator.
+The following graphs contain the values for the average, computer science, the best, and the worst course for the specific indicator.
 
 ![](./reports/assiduidade-e-pontualidade.png)
 

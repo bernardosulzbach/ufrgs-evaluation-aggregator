@@ -1,6 +1,6 @@
 {
   "project_description": "This project aims to aggregate all the scattered numbers the Federal University of Rio Grande do Sul provides about the student evaluation of their courses into human-friendly graphs.",
-  "graphs_description": "The following graphs contain the values for average, computer science and the best and worst course in the specific indicator.",
+  "graphs_description": "The following graphs contain the values for the average, computer science, the best, and the worst course for the specific indicator.",
   "sources_base_path": "http://www.ufrgs.br/sai/dados-resultados/painel-qualidade/dados-2016-1/serie-historica-discente/curso/",
   "plot_everything": false,
   "sources_root": "./sources",

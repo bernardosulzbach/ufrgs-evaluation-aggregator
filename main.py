@@ -1,3 +1,5 @@
+import numpy
+import scipy.interpolate
 import statistics
 import re
 import time
@@ -243,11 +245,9 @@ if __name__ == '__main__':
         max_name = ''
         max_values = [0.0]
         for aggregate in aggregates.values():
-            if not aggregate.data[indicator]:
+            if not aggregate.data[indicator] or None in aggregate.data[indicator].values():
                 continue
-            values = [value for value in aggregate.data[indicator].values() if value is not None]
-            if not values:
-                continue
+            values = list(aggregate.data[indicator].values())
             if statistics.median(values) < statistics.median(min_values):
                 min_values = values
                 min_name = aggregate.name
@@ -261,13 +261,25 @@ if __name__ == '__main__':
             labels.append(period)
             average_values.append(average.data[indicator][period])
             computer_science_values.append(computer_science.data[indicator][period])
-        plt.plot(average_values, label='Média')
-        plt.plot(computer_science_values, label='Ciência da Computação')
+
+
+        def smooth_plot(xs, values, label):
+            points = 128
+            new_xs = numpy.linspace(xs[0], xs[-1], points)
+            # Could use some interpolation here, but there is no reason.
+            values_smooth = scipy.interpolate.spline(xs, values, new_xs)
+            if '(' in label:
+                label = label[:label.find('(')].strip()
+            plt.plot(new_xs, values_smooth, label=label)
+
+
         # Because minimum and maximum may have missing initial values, we have to supply X too.
         min_x = range(len(computer_science_values) - len(min_values), len(computer_science_values))
         max_x = range(len(computer_science_values) - len(max_values), len(computer_science_values))
-        plt.plot(min_x, min_values, label=min_name[:min_name.find('(')].strip())
-        plt.plot(max_x, max_values, label=max_name[:max_name.find('(')].strip())
+        smooth_plot(range(len(average_values)), average_values, label='Média')
+        smooth_plot(range(len(computer_science_values)), computer_science_values, label='Ciência da Computação')
+        smooth_plot(min_x, min_values, label=min_name)
+        smooth_plot(max_x, max_values, label=max_name)
         plt.xticks(range(len(labels)), labels)
         plot_path = configuration['reports_root']
         plot_filename = normalize_name(indicator) + '.png'
