@@ -1,12 +1,15 @@
 import re
+import time
 import PyPDF2
 import urllib.error
 import urllib.request
 import os
-import sys
 import logging
 import json
 import matplotlib.pyplot as plt
+import unidecode
+import collections
+import multiprocessing
 
 configuration_filename = 'configuration.json'
 
@@ -39,6 +42,16 @@ class Aggregate():
                 bits.append('\n')
         return ''.join(bits)
 
+    def plot(self, path):
+        for indicator in self.data:
+            plt.title(self.name + ': ' + indicator)
+            plt.plot(list(self.data[indicator].values()))
+            plot_path = os.path.join(path, normalize_name(self.name))
+            full_plot_path = os.path.join(plot_path, normalize_name(indicator) + '.svg')
+            ensure_path_exists(plot_path)
+            plt.savefig(full_plot_path)
+            plt.close()
+
 
 def ensure_path_exists(path):
     try:
@@ -50,30 +63,44 @@ def ensure_path_exists(path):
             raise
 
 
+def download(target_tuple):
+    url = target_tuple[0]
+    path = target_tuple[1]
+    if os.path.exists(path):
+        return
+    try:
+        urllib.request.urlretrieve(url, path)
+    except urllib.error.HTTPError:
+        pass
+    except:
+        logger.error('Unhandled exception!')
+        raise
+
+
+def get_worker_count():
+    return multiprocessing.cpu_count()
+
+
 def initialize_sources(logger):
     with open(configuration_filename) as configuration_handler:
         configuration = json.load(configuration_handler)
     base_path = configuration['sources_base_path']
     root = configuration['sources_root']
     ensure_path_exists(root)
-    logger.info('Started downloading data files...')
-    # Download all XX.pdf until we get a 404.
-    for i in range(1, 100):
+    logger.info('Started downloading data files.')
+    # Download all first 20 XX.pdf, failing silently on 404s.
+    arguments = []
+    for i in range(1, 20):
         filename = '{:02}.pdf'.format(i)
-        full_url = base_path + filename
-        source_path = os.path.join(root, filename)
-        if os.path.exists(source_path):
-            continue
-        try:
-            urllib.request.urlretrieve(full_url, source_path)
-        except urllib.error.HTTPError:
-            downloaded = i - 1
-            logger.info('Stopped after downloading {} file{}.'.format(downloaded, '' if downloaded == 1 else 's'))
-            break
-        except:
-            logger.error('Unhandled exception!')
-            raise
-    logger.info('Finished downloading data files.')
+        source = base_path + filename
+        destination = os.path.join(root, filename)
+        arguments.append((source, destination))
+    start = time.time()
+    with multiprocessing.Pool(get_worker_count()) as pool:
+        pool.map(download, arguments)
+    end = time.time()
+    delta = end - start
+    logger.info('Finished downloading data files after {:.3f} s.'.format(delta))
 
 
 def extract_text(pdf_filename):
@@ -84,7 +111,14 @@ def extract_text(pdf_filename):
 
 
 def normalize_name(name):
-    return name.lower().replace(' ', '-')
+    name = name.lower()
+    name = unidecode.unidecode(name)
+    name = name.replace(' ', '-')
+    while '--' in name:
+        name = name.replace('--', '-')
+    name = name.replace('(', '')
+    name = name.replace(')', '')
+    return name
 
 
 def make_logger(filename):
@@ -103,6 +137,7 @@ def make_logger(filename):
 
 if __name__ == '__main__':
     logger = make_logger('log.txt')
+    logger.info('Using {} process{}.'.format(get_worker_count(), '' if get_worker_count() == 1 else 'es'))
     initialize_sources(logger)
     with open(configuration_filename) as configuration_handler:
         configuration = json.load(configuration_handler)
@@ -137,3 +172,37 @@ if __name__ == '__main__':
     with open('aggregate.txt', 'w') as aggregate_handle:
         for aggregate in aggregates.values():
             print(str(aggregate), file=aggregate_handle)
+
+    if False:
+        for aggregate in aggregates.values():
+            aggregate.plot('plots')
+
+    # Plot the combination of the average and the computer science data.
+    logger.info('Computing averages.')
+    totals = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
+    counts = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
+    for aggregate in aggregates.values():
+        for indicator in aggregate.data:
+            for period in aggregate.data[indicator]:
+                if aggregate.data[indicator][period]:
+                    totals[indicator][period] += aggregate.data[indicator][period]
+                    counts[indicator][period] += 1
+    average = Aggregate('Average')
+    for indicator in totals:
+        for period in totals[indicator]:
+            average.update_data(indicator, period, totals[indicator][period] / counts[indicator][period])
+    computer_science = None
+    for aggregate in aggregates.values():
+        if aggregate.name.startswith('Ciência da Computação'):
+            computer_science = aggregate
+            break
+    for indicator in average.data:
+        plt.title('Comparison' + ': ' + indicator)
+        plt.plot(list(average.data[indicator].values()), label='Average')
+        plt.plot(list(computer_science.data[indicator].values()), label='CS')
+        plot_path = os.path.join('plots', normalize_name('comparison'))
+        full_plot_path = os.path.join(plot_path, normalize_name(indicator) + '.svg')
+        ensure_path_exists(plot_path)
+        plt.legend()
+        plt.savefig(full_plot_path)
+        plt.close()
